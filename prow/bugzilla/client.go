@@ -47,6 +47,8 @@ type Client interface {
 	UpdateBug(id int, update BugUpdate) error
 	AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
 	RemovePullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
+	GetAllClones(bug *Bug) ([]*Bug, error)
+	GetRoot(bug *Bug) (*Bug, error)
 }
 
 func NewClient(getAPIKey func() []byte, endpoint string) Client {
@@ -115,6 +117,105 @@ func getClones(c Client, bug *Bug) ([]*Bug, error) {
 // GetClones gets the list of bugs that the provided bug blocks that also have a matching summary.
 func (c *client) GetClones(bug *Bug) ([]*Bug, error) {
 	return getClones(c, bug)
+}
+
+// Gets children clones recursively using a mechanism similar to bfs
+func getRecursiveClones(c Client, root *Bug) ([]*Bug, error) {
+	var errs []error
+	var bug *Bug
+	clones := []*Bug{}
+	childrenQ := []*Bug{}
+	childrenQ = append(childrenQ, root)
+	// FYI Cannot think of any situation for circular clones
+	// But might need to revisit in case there are infinite loops at any point
+	for len(childrenQ) > 0 {
+		bug, childrenQ = childrenQ[0], childrenQ[1:]
+		clones = append(clones, bug)
+		children, err := getClones(c, bug)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("Error finding clones Bug#%d: %v", bug.ID, err))
+		}
+		if len(children) > 0 {
+			childrenQ = append(childrenQ, children...)
+		}
+	}
+	return clones, utilerrors.NewAggregate(errs)
+}
+
+// GetImmediateParents gets the Immediate parents of bugs with a matching summary
+func getImmediateParents(c Client, bug *Bug) ([]*Bug, error) {
+	var errs []error
+	parents := []*Bug{}
+	// One option would be to return as soon as the first parent is found
+	// ideally that should be enough, although there is a check in the getRoot function to verify this
+	// Logs would need to be monitored to verify this behavior
+	for _, parentID := range bug.DependsOn {
+		parent, err := c.GetBug(parentID)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("Failed to get parent bug #%d: %v", parentID, err))
+			continue
+		}
+		if parent.Summary == bug.Summary {
+			parents = append(parents, parent)
+		}
+	}
+	return parents, utilerrors.NewAggregate(errs)
+}
+
+func getRoot(c Client, bug *Bug) (*Bug, error) {
+	curr := bug
+	var errs []error
+	for len(curr.DependsOn) > 0 {
+		parent, err := getImmediateParents(c, curr)
+		if err != nil {
+			errs = append(errs, err)
+		}
+		if len(parent) > 0 {
+			// Might be a good idea to keep this check - since we dont expect more than 1 parent
+			if len(parent) > 1 {
+				errs = append(errs, fmt.Errorf("More than one parent found for bug #%d", curr.ID))
+			}
+			curr = parent[0]
+		} else {
+			break
+		}
+	}
+	return curr, utilerrors.NewAggregate(errs)
+}
+
+// GetRoot returns the original bug.
+func (c *client) GetRoot(bug *Bug) (*Bug, error) {
+	return getRoot(c, bug)
+}
+
+// GetAllClones returns all the clones of the bug including itself
+// Differs from GetClones as GetClones only gets the child clones which are one level lower
+func (c *client) GetAllClones(bug *Bug) ([]*Bug, error) {
+	return getAllClones(c, bug)
+}
+func getAllClones(c Client, bug *Bug) ([]*Bug, error) {
+	root, err := getRoot(c, bug)
+	if err != nil {
+		return nil, err
+	}
+	clones, err := getRecursiveClones(c, root)
+	if err != nil {
+		return nil, err
+	}
+	// Getting rid of the bug whose clones we are searching for
+	// we could optimize this (maybe?) if the list turns out to be too long
+	indexOfOriginal := -1
+	for index, clone := range clones {
+		if clone.ID == bug.ID {
+			// Check if there is a more elegant way to do this
+			indexOfOriginal = index
+		}
+	}
+	if indexOfOriginal == -1 {
+		return nil, fmt.Errorf("Original bug not found in list of clones. Error in logic for getRecursiveClones/getRoot")
+	}
+	clones = append(clones[:indexOfOriginal], clones[indexOfOriginal+1:]...)
+	return clones, nil
 }
 
 // GetSubComponentsOnBug retrieves a the list of SubComponents of the bug.
