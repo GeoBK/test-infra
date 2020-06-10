@@ -108,7 +108,7 @@ type Bug struct {
 	// Whiteboard is he value of the "status whiteboard" field on the bug.
 	Whiteboard string `json:"whiteboard,omitempty"`
 	// PRs holds the links to the pull requests associated with the bug.
-	PRs []ExternalBug
+	PRs []ExternalBug `json:"external_bug,omitempty"`
 }
 
 // BugCreate holds the info needed to create a new bug

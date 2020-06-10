@@ -37,17 +37,46 @@ const (
 
 type Client interface {
 	Endpoint() string
+	// GetBug retrieves a Bug from the server
 	GetBug(id int) (*Bug, error)
+	// GetComments gets a list of comments for a specific bug ID.
+	// https://bugzilla.readthedocs.io/en/latest/api/core/v1/comment.html#get-comments
 	GetComments(id int) ([]Comment, error)
+	// GetExternalBugPRsOnBug retrieves external bugs on a Bug from the server
+	// and returns any that reference a Pull Request in GitHub
+	// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#get-bug
 	GetExternalBugPRsOnBug(id int) ([]ExternalBug, error)
+	// GetSubComponentsOnBug retrieves a the list of SubComponents of the bug.
+	// SubComponents are a Red Hat bugzilla specific extra field.
 	GetSubComponentsOnBug(id int) (map[string][]string, error)
+	// GetClones gets the list of bugs that the provided bug blocks that also have a matching summary.
 	GetClones(bug *Bug) ([]*Bug, error)
+	// CreateBug creates a new bug on the server.
+	// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#create-bug
 	CreateBug(bug *BugCreate) (int, error)
+	// CloneBug clones a bug by creating a new bug with the same fields, copying the description, and updating the bug to depend on the original bug
 	CloneBug(bug *Bug) (int, error)
+	// UpdateBug updates the fields of a bug on the server
+	// https://bugzilla.readthedocs.io/en/latest/api/core/v1/bug.html#update-bug
 	UpdateBug(id int, update BugUpdate) error
+	// AddPullRequestAsExternalBug attempts to add a PR to the external tracker list.
+	// External bugs are assumed to fall under the type identified by their hostname,
+	// so we will provide https://github.com/ here for the URL identifier. We return
+	// any error as well as whether a change was actually made.
+	// This will be done via JSONRPC:
+	// https://bugzilla.redhat.com/docs/en/html/integrating/api/Bugzilla/Extension/ExternalBugs/WebService.html#add-external-bug
 	AddPullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
+	// RemovePullRequestAsExternalBug attempts to remove a PR from the external tracker list.
+	// External bugs are assumed to fall under the type identified by their hostname,
+	// so we will provide https://github.com/ here for the URL identifier. We return
+	// any error as well as whether a change was actually made.
+	// This will be done via JSONRPC:
+	// https://bugzilla.redhat.com/docs/en/html/integrating/api/Bugzilla/Extension/ExternalBugs/WebService.html#remove-external-bug
 	RemovePullRequestAsExternalBug(id int, org, repo string, num int) (bool, error)
+	// GetAllClones returns all the clones of the bug including itself
+	// Differs from GetClones as GetClones only gets the child clones which are one level lower
 	GetAllClones(bug *Bug) ([]*Bug, error)
+	// GetRoot returns the original bug.
 	GetRoot(bug *Bug) (*Bug, error)
 }
 
@@ -142,7 +171,7 @@ func getRecursiveClones(c Client, root *Bug) ([]*Bug, error) {
 	return clones, utilerrors.NewAggregate(errs)
 }
 
-// GetImmediateParents gets the Immediate parents of bugs with a matching summary
+// getImmediateParents gets the Immediate parents of bugs with a matching summary
 func getImmediateParents(c Client, bug *Bug) ([]*Bug, error) {
 	var errs []error
 	parents := []*Bug{}
@@ -170,14 +199,14 @@ func getRoot(c Client, bug *Bug) (*Bug, error) {
 		if err != nil {
 			errs = append(errs, err)
 		}
-		if len(parent) > 0 {
-			// Might be a good idea to keep this check - since we dont expect more than 1 parent
-			if len(parent) > 1 {
-				errs = append(errs, fmt.Errorf("More than one parent found for bug #%d", curr.ID))
-			}
-			curr = parent[0]
-		} else {
+		switch l := len(parent); {
+		case l <= 0:
 			break
+		case l == 1:
+			curr = parent[0]
+		case l > 1:
+			curr = parent[0]
+			errs = append(errs, fmt.Errorf("More than one parent found for bug #%d", curr.ID))
 		}
 	}
 	return curr, utilerrors.NewAggregate(errs)
