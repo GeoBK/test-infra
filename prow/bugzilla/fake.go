@@ -245,11 +245,11 @@ func (c *Fake) GetAllClones(bug *Bug) ([]*Bug, error) {
 }
 
 // GetRoot gets the original bug.
-func (c *Fake) GetRoot(bug *Bug) (*Bug, error) {
+func (c *Fake) GetRootForClone(bug *Bug) (*Bug, error) {
 	if c.BugErrors.Has(bug.ID) {
 		return nil, errors.New("injected error getting bug")
 	}
-	return getRoot(c, bug)
+	return getRootForClone(c, bug)
 }
 
 // the Fake is a Client

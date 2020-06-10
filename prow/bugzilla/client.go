@@ -76,8 +76,8 @@ type Client interface {
 	// GetAllClones returns all the clones of the bug including itself
 	// Differs from GetClones as GetClones only gets the child clones which are one level lower
 	GetAllClones(bug *Bug) ([]*Bug, error)
-	// GetRoot returns the original bug.
-	GetRoot(bug *Bug) (*Bug, error)
+	// GetRootForClone returns the original bug.
+	GetRootForClone(bug *Bug) (*Bug, error)
 }
 
 func NewClient(getAPIKey func() []byte, endpoint string) Client {
@@ -176,7 +176,7 @@ func getImmediateParents(c Client, bug *Bug) ([]*Bug, error) {
 	var errs []error
 	parents := []*Bug{}
 	// One option would be to return as soon as the first parent is found
-	// ideally that should be enough, although there is a check in the getRoot function to verify this
+	// ideally that should be enough, although there is a check in the getRootForClone function to verify this
 	// Logs would need to be monitored to verify this behavior
 	for _, parentID := range bug.DependsOn {
 		parent, err := c.GetBug(parentID)
@@ -191,7 +191,7 @@ func getImmediateParents(c Client, bug *Bug) ([]*Bug, error) {
 	return parents, utilerrors.NewAggregate(errs)
 }
 
-func getRoot(c Client, bug *Bug) (*Bug, error) {
+func getRootForClone(c Client, bug *Bug) (*Bug, error) {
 	curr := bug
 	var errs []error
 	for len(curr.DependsOn) > 0 {
@@ -212,9 +212,9 @@ func getRoot(c Client, bug *Bug) (*Bug, error) {
 	return curr, utilerrors.NewAggregate(errs)
 }
 
-// GetRoot returns the original bug.
-func (c *client) GetRoot(bug *Bug) (*Bug, error) {
-	return getRoot(c, bug)
+// GetRootForClone returns the original bug.
+func (c *client) GetRootForClone(bug *Bug) (*Bug, error) {
+	return getRootForClone(c, bug)
 }
 
 // GetAllClones returns all the clones of the bug including itself
@@ -223,7 +223,7 @@ func (c *client) GetAllClones(bug *Bug) ([]*Bug, error) {
 	return getAllClones(c, bug)
 }
 func getAllClones(c Client, bug *Bug) ([]*Bug, error) {
-	root, err := getRoot(c, bug)
+	root, err := getRootForClone(c, bug)
 	if err != nil {
 		return nil, err
 	}
@@ -241,7 +241,7 @@ func getAllClones(c Client, bug *Bug) ([]*Bug, error) {
 		}
 	}
 	if indexOfOriginal == -1 {
-		return nil, fmt.Errorf("Original bug not found in list of clones. Error in logic for getRecursiveClones/getRoot")
+		return nil, fmt.Errorf("Original bug not found in list of clones. Error in logic for getRecursiveClones/getRootForClone")
 	}
 	clones = append(clones[:indexOfOriginal], clones[indexOfOriginal+1:]...)
 	return clones, nil
