@@ -930,3 +930,156 @@ func TestGetExternalBugPRsOnBug(t *testing.T) {
 		})
 	}
 }
+
+func TestGetAllClones(t *testing.T) {
+	exists := struct{}{}
+	testcases := map[int]struct {
+		bugDetails     string
+		prDetails      string
+		expectedClones map[int]struct{}
+	}{
+		1843407: {
+			`{"bugs" : [{ "alias" : [], "assigned_to" : "Sudha Ponnaganti", "assigned_to_detail" : {"email" : "sponnaga","id" : 426940,"name" : "sponnaga","real_name" : "Sudha Ponnaganti" }, "blocks" : [1844101 ], "cc" : ["aos-bugs@redhat.com","Eric Paris","Joanne Okerman","Roy Golan","Steve Kuznetsov","Sudha Ponnaganti" ], "cc_detail" : [{"email" : "aos-bugs","id" : 385833,"name" : "aos-bugs","real_name" : "aos-bugs@redhat.com"},{"email" : "eparis","id" : 165117,"name" : "eparis","real_name" : "Eric Paris"},{"email" : "jokerman","id" : 344626,"name" : "jokerman","real_name" : "Joanne Okerman"},{"email" : "rgolan","id" : 300276,"name" : "rgolan","real_name" : "Roy Golan"},{"email" : "skuznets","id" : 381851,"name" : "skuznets","real_name" : "Steve Kuznetsov"},{"email" : "sponnaga","id" : 426940,"name" : "sponnaga","real_name" : "Sudha Ponnaganti"} ], "cf_clone_of" : null, "cf_doc_type" : "If docs needed, set a value", "cf_environment" : "", "cf_fixed_in" : "", "cf_last_closed" : null, "cf_release_notes" : "", "cf_target_upstream_version" : "", "classification" : "Red Hat", "component" : ["Unknown" ], "creation_time" : "2020-06-03T09:03:41Z", "creator" : "Gal Zaidman", "creator_detail" : {"email" : "gzaidman","id" : 422274,"name" : "gzaidman","real_name" : "Gal Zaidman" }, "deadline" : null, "depends_on" : [], "docs_contact" : "", "dupe_of" : null, "groups" : [], "id" : 1843407, "is_cc_accessible" : true, "is_confirmed" : true, "is_creator_accessible" : true, "is_open" : true, "keywords" : [], "last_change_time" : "2020-06-07T11:08:27Z", "op_sys" : "Unspecified", "platform" : "Unspecified", "priority" : "unspecified", "product" : "OpenShift Container Platform", "qa_contact" : "Jianwei Hou", "qa_contact_detail" : {"email" : "jhou","id" : 332453,"name" : "jhou","real_name" : "Jianwei Hou" }, "resolution" : "", "see_also" : [], "severity" : "medium", "status" : "VERIFIED", "summary" : "[oVirt] add oVirt as a provide to openshift tests", "target_milestone" : "---", "target_release" : ["4.6.0" ], "url" : "", "version" : ["4.5" ], "whiteboard" : ""}],"faults" : []}`,
+			`{"bugs" : [{ "external_bugs" : [{"bug_id" : 1843407,"ext_bz_bug_id" : "openshift/origin/pull/25057","ext_bz_id" : 131,"ext_description" : "Bug 1843407: oVirt, add oVirt as a provide to openshift tests","ext_priority" : "None","ext_status" : "closed","id" : 1185327,"type" : {"can_get" : true,"can_send" : false,"description" : "Github","full_url" : "https://github.com/%id%","id" : 131,"must_send" : false,"send_once" : false,"type" : "GitHub","url" : "https://github.com/"}} ]}],"faults" : []}`,
+			map[int]struct{}{1844101: exists, 1844102: exists},
+		},
+		1844101: {
+			`{"bugs" : [{ "alias" : [], "assigned_to" : "Gal Zaidman", "assigned_to_detail" : {"email" : "gzaidman","id" : 422274,"name" : "gzaidman","real_name" : "Gal Zaidman" }, "blocks" : [1844102 ], "cc" : ["aos-bugs@redhat.com","Eric Paris","Joanne Okerman","Stephen Cuppett","Steve Kuznetsov","Sudha Ponnaganti" ], "cc_detail" : [{"email" : "aos-bugs","id" : 385833,"name" : "aos-bugs","real_name" : "aos-bugs@redhat.com"},{"email" : "eparis","id" : 165117,"name" : "eparis","real_name" : "Eric Paris"},{"email" : "jokerman","id" : 344626,"name" : "jokerman","real_name" : "Joanne Okerman"},{"email" : "scuppett","id" : 420685,"name" : "scuppett","real_name" : "Stephen Cuppett"},{"email" : "skuznets","id" : 381851,"name" : "skuznets","real_name" : "Steve Kuznetsov"},{"email" : "sponnaga","id" : 426940,"name" : "sponnaga","real_name" : "Sudha Ponnaganti"} ], "cf_clone_of" : null, "cf_doc_type" : "If docs needed, set a value", "cf_environment" : "", "cf_fixed_in" : "", "cf_last_closed" : null, "cf_release_notes" : "", "cf_target_upstream_version" : "", "classification" : "Red Hat", "component" : ["Unknown" ], "creation_time" : "2020-06-04T15:43:10Z", "creator" : "OpenShift BugZilla Robot", "creator_detail" : {"email" : "openshift-bugzilla-robot","id" : 438033,"name" : "openshift-bugzilla-robot","real_name" : "OpenShift BugZilla Robot" }, "deadline" : null, "depends_on" : [1843407 ], "docs_contact" : "", "dupe_of" : null, "groups" : [], "id" : 1844101, "is_cc_accessible" : true, "is_confirmed" : true, "is_creator_accessible" : true, "is_open" : true, "keywords" : ["CodeChange" ], "last_change_time" : "2020-06-11T05:39:35Z", "op_sys" : "Unspecified", "platform" : "Unspecified", "priority" : "unspecified", "product" : "OpenShift Container Platform", "qa_contact" : "Gal Zaidman", "qa_contact_detail" : {"email" : "gzaidman","id" : 422274,"name" : "gzaidman","real_name" : "Gal Zaidman" }, "resolution" : "", "see_also" : [], "severity" : "medium", "status" : "VERIFIED", "summary" : "[oVirt] add oVirt as a provide to openshift tests", "target_milestone" : "---", "target_release" : ["4.5.0" ], "url" : "", "version" : ["4.5" ], "whiteboard" : ""}],"faults" : []}`,
+			`{"bugs" : [{ "external_bugs" : [{"bug_id" : 1843407,"ext_bz_bug_id" : "openshift/origin/pull/25057","ext_bz_id" : 131,"ext_description" : "Bug 1843407: oVirt, add oVirt as a provide to openshift tests","ext_priority" : "None","ext_status" : "closed","id" : 1185327,"type" : {"can_get" : true,"can_send" : false,"description" : "Github","full_url" : "https://github.com/%id%","id" : 131,"must_send" : false,"send_once" : false,"type{"bugs" : [{ "external_bugs" : [{"bug_id" : 1844101,"ext_bz_bug_id" : "openshift/origin/pull/25065","ext_bz_id" : 131,"ext_description" : "[release-4.5] Bug 1844101: oVirt, add oVirt as a provide to openshift tests","ext_priority" : "None","ext_status" : "open","id" : 1186600,"type" : {"can_get" : true,"can_send" : false,"description" : "Github","full_url" : "https://github.com/%id%","id" : 131,"must_send" : false,"send_once" : false,"type" : "GitHub","url" : "https://github.com/"}} ]}],"faults" : []}`,
+			map[int]struct{}{1843407: exists, 1844102: exists},
+		},
+		1844102: {
+			`{"bugs" : [ {"alias" : [],"assigned_to" : "Gal Zaidman","assigned_to_detail" : {"email" : "gzaidman","id" : 422274,"name" : "gzaidman","real_name" : "Gal Zaidman"},"blocks" : [],"cc" : ["aos-bugs@redhat.com","Eric Paris","Gal Zaidman","Joanne Okerman","Steve Kuznetsov","Sudha Ponnaganti"],"cc_detail" : [{"email" : "aos-bugs","id" : 385833,"name" : "aos-bugs","real_name" : "aos-bugs@redhat.com"},{"email" : "eparis","id" : 165117,"name" : "eparis","real_name" : "Eric Paris"},{"email" : "gzaidman","id" : 422274,"name" : "gzaidman","real_name" : "Gal Zaidman"},{"email" : "jokerman","id" : 344626,"name" : "jokerman","real_name" : "Joanne Okerman"},{"email" : "skuznets","id" : 381851,"name" : "skuznets","real_name" : "Steve Kuznetsov"},{"email" : "sponnaga","id" : 426940,"name" : "sponnaga","real_name" : "Sudha Ponnaganti"}],"cf_clone_of" : null,"cf_doc_type" : "If docs needed, set a value","cf_environment" : "","cf_fixed_in" : "","cf_last_closed" : null,"cf_release_notes" : "","cf_target_upstream_version" : "","classification" : "Red Hat","component" : ["Cloud Compute"],"creation_time" : "2020-06-04T15:43:52Z","creator" : "OpenShift BugZilla Robot","creator_detail" : {"email" : "openshift-bugzilla-robot","id" : 438033,"name" : "openshift-bugzilla-robot","real_name" : "OpenShift BugZilla Robot"},"deadline" : null,"depends_on" : [1844101],"docs_contact" : "","dupe_of" : null,"groups" : [],"id" : 1844102,"is_cc_accessible" : true,"is_confirmed" : true,"is_creator_accessible" : true,"is_open" : true,"keywords" : [],"last_change_time" : "2020-06-11T05:39:58Z","op_sys" : "Unspecified","platform" : "Unspecified","priority" : "unspecified","product" : "OpenShift Container Platform","qa_contact" : "Lucie Leistnerova","qa_contact_detail" : {"email" : "lleistne","id" : 399127,"name" : "lleistne","real_name" : "Lucie Leistnerova"},"resolution" : "","see_also" : [],"severity" : "medium","status" : "POST","summary" : "[oVirt] add oVirt as a provide to openshift tests","target_milestone" : "---","target_release" : ["4.4.z"],"url" : "","version" : ["4.5"],"whiteboard" : "" }],"faults" : []}`,
+			`{"bugs" : [{ "external_bugs" : [{"bug_id" : 1844102,"ext_bz_bug_id" : "openshift/origin/pull/25066","ext_bz_id" : 131,"ext_description" : "[release-4.4] Bug 1844102: oVirt, add oVirt as a provide to openshift tests","ext_priority" : "None","ext_status" : "open","id" : 1190587,"type" : {"can_get" : true,"can_send" : false,"description" : "Github","full_url" : "https://github.com/%id%","id" : 131,"must_send" : false,"send_once" : false,"type" : "GitHub","url" : "https://github.com/"}} ]}],"faults" : []}`,
+			map[int]struct{}{1843407: exists, 1844101: exists},
+		},
+	}
+
+	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
+			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.URL.Query().Get("api_key") != "api-key" {
+			t.Error("did not get api-key passed in api_key query parameter")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.Method != http.MethodGet {
+			t.Errorf("incorrect method to get a bug: %s", r.Method)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if !strings.HasPrefix(r.URL.Path, "/rest/bug/") {
+			t.Errorf("incorrect path to get a bug: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, "/rest/bug/") {
+			id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/rest/bug/"))
+			if err != nil {
+				t.Errorf("malformed bug id: %s", r.URL.Path)
+				http.Error(w, "400 Bad Request", http.StatusBadRequest)
+				return
+			}
+			if r.URL.Query().Get("include_fields") == "external_bugs" {
+				if val, ok := testcases[id]; ok {
+					w.Write([]byte(val.prDetails))
+				} else {
+					http.Error(w, "404 Not Found", http.StatusNotFound)
+				}
+			} else {
+				if val, ok := testcases[id]; ok {
+					w.Write([]byte(val.bugDetails))
+				} else {
+					http.Error(w, "404 Not Found", http.StatusNotFound)
+				}
+			}
+
+		}
+
+	}))
+	defer testServer.Close()
+	client := clientForUrl(testServer.URL)
+	for tc, tp := range testcases {
+		t.Run(strconv.Itoa(tc), func(t *testing.T) {
+			var parsedResponse struct {
+				Bugs []*Bug `json:"bugs,omitempty"`
+			}
+			if err := json.Unmarshal([]byte(tp.bugDetails), &parsedResponse); err != nil {
+				t.Fatal(err)
+			}
+			clones, err := client.GetAllClones(parsedResponse.Bugs[0])
+			if err != nil {
+				t.Errorf("Error occured when none was expected: %v", err)
+			}
+			if len(tp.expectedClones) != len(clones) {
+				t.Errorf("Mismatch in number of clones - expected: %d, got %d", len(tp.expectedClones), len(clones))
+			}
+			for _, clone := range clones {
+				if _, ok := tp.expectedClones[clone.ID]; !ok {
+					t.Errorf("Unexpected clone found in list - expecting: %v, got: %d", tp.expectedClones, clone.ID)
+				}
+			}
+		})
+
+	}
+
+}
+
+func TestGetRootForClone(t *testing.T) {
+	bugMappings := map[int]string{
+		1843407: `{"bugs" : [{ "alias" : [], "assigned_to" : "Sudha Ponnaganti", "assigned_to_detail" : {"email" : "sponnaga","id" : 426940,"name" : "sponnaga","real_name" : "Sudha Ponnaganti" }, "blocks" : [1844101 ], "cc" : ["aos-bugs@redhat.com","Eric Paris","Joanne Okerman","Roy Golan","Steve Kuznetsov","Sudha Ponnaganti" ], "cc_detail" : [{"email" : "aos-bugs","id" : 385833,"name" : "aos-bugs","real_name" : "aos-bugs@redhat.com"},{"email" : "eparis","id" : 165117,"name" : "eparis","real_name" : "Eric Paris"},{"email" : "jokerman","id" : 344626,"name" : "jokerman","real_name" : "Joanne Okerman"},{"email" : "rgolan","id" : 300276,"name" : "rgolan","real_name" : "Roy Golan"},{"email" : "skuznets","id" : 381851,"name" : "skuznets","real_name" : "Steve Kuznetsov"},{"email" : "sponnaga","id" : 426940,"name" : "sponnaga","real_name" : "Sudha Ponnaganti"} ], "cf_clone_of" : null, "cf_doc_type" : "If docs needed, set a value", "cf_environment" : "", "cf_fixed_in" : "", "cf_last_closed" : null, "cf_release_notes" : "", "cf_target_upstream_version" : "", "classification" : "Red Hat", "component" : ["Unknown" ], "creation_time" : "2020-06-03T09:03:41Z", "creator" : "Gal Zaidman", "creator_detail" : {"email" : "gzaidman","id" : 422274,"name" : "gzaidman","real_name" : "Gal Zaidman" }, "deadline" : null, "depends_on" : [], "docs_contact" : "", "dupe_of" : null, "groups" : [], "id" : 1843407, "is_cc_accessible" : true, "is_confirmed" : true, "is_creator_accessible" : true, "is_open" : true, "keywords" : [], "last_change_time" : "2020-06-07T11:08:27Z", "op_sys" : "Unspecified", "platform" : "Unspecified", "priority" : "unspecified", "product" : "OpenShift Container Platform", "qa_contact" : "Jianwei Hou", "qa_contact_detail" : {"email" : "jhou","id" : 332453,"name" : "jhou","real_name" : "Jianwei Hou" }, "resolution" : "", "see_also" : [], "severity" : "medium", "status" : "VERIFIED", "summary" : "[oVirt] add oVirt as a provide to openshift tests", "target_milestone" : "---", "target_release" : ["4.6.0" ], "url" : "", "version" : ["4.5" ], "whiteboard" : ""}],"faults" : []}`,
+		1844101: `{"bugs" : [{ "alias" : [], "assigned_to" : "Gal Zaidman", "assigned_to_detail" : {"email" : "gzaidman","id" : 422274,"name" : "gzaidman","real_name" : "Gal Zaidman" }, "blocks" : [1844102 ], "cc" : ["aos-bugs@redhat.com","Eric Paris","Joanne Okerman","Stephen Cuppett","Steve Kuznetsov","Sudha Ponnaganti" ], "cc_detail" : [{"email" : "aos-bugs","id" : 385833,"name" : "aos-bugs","real_name" : "aos-bugs@redhat.com"},{"email" : "eparis","id" : 165117,"name" : "eparis","real_name" : "Eric Paris"},{"email" : "jokerman","id" : 344626,"name" : "jokerman","real_name" : "Joanne Okerman"},{"email" : "scuppett","id" : 420685,"name" : "scuppett","real_name" : "Stephen Cuppett"},{"email" : "skuznets","id" : 381851,"name" : "skuznets","real_name" : "Steve Kuznetsov"},{"email" : "sponnaga","id" : 426940,"name" : "sponnaga","real_name" : "Sudha Ponnaganti"} ], "cf_clone_of" : null, "cf_doc_type" : "If docs needed, set a value", "cf_environment" : "", "cf_fixed_in" : "", "cf_last_closed" : null, "cf_release_notes" : "", "cf_target_upstream_version" : "", "classification" : "Red Hat", "component" : ["Unknown" ], "creation_time" : "2020-06-04T15:43:10Z", "creator" : "OpenShift BugZilla Robot", "creator_detail" : {"email" : "openshift-bugzilla-robot","id" : 438033,"name" : "openshift-bugzilla-robot","real_name" : "OpenShift BugZilla Robot" }, "deadline" : null, "depends_on" : [1843407 ], "docs_contact" : "", "dupe_of" : null, "groups" : [], "id" : 1844101, "is_cc_accessible" : true, "is_confirmed" : true, "is_creator_accessible" : true, "is_open" : true, "keywords" : ["CodeChange" ], "last_change_time" : "2020-06-11T05:39:35Z", "op_sys" : "Unspecified", "platform" : "Unspecified", "priority" : "unspecified", "product" : "OpenShift Container Platform", "qa_contact" : "Gal Zaidman", "qa_contact_detail" : {"email" : "gzaidman","id" : 422274,"name" : "gzaidman","real_name" : "Gal Zaidman" }, "resolution" : "", "see_also" : [], "severity" : "medium", "status" : "VERIFIED", "summary" : "[oVirt] add oVirt as a provide to openshift tests", "target_milestone" : "---", "target_release" : ["4.5.0" ], "url" : "", "version" : ["4.5" ], "whiteboard" : ""}],"faults" : []}`,
+		1844102: `{"bugs" : [ {"alias" : [],"assigned_to" : "Gal Zaidman","assigned_to_detail" : {"email" : "gzaidman","id" : 422274,"name" : "gzaidman","real_name" : "Gal Zaidman"},"blocks" : [],"cc" : ["aos-bugs@redhat.com","Eric Paris","Gal Zaidman","Joanne Okerman","Steve Kuznetsov","Sudha Ponnaganti"],"cc_detail" : [{"email" : "aos-bugs","id" : 385833,"name" : "aos-bugs","real_name" : "aos-bugs@redhat.com"},{"email" : "eparis","id" : 165117,"name" : "eparis","real_name" : "Eric Paris"},{"email" : "gzaidman","id" : 422274,"name" : "gzaidman","real_name" : "Gal Zaidman"},{"email" : "jokerman","id" : 344626,"name" : "jokerman","real_name" : "Joanne Okerman"},{"email" : "skuznets","id" : 381851,"name" : "skuznets","real_name" : "Steve Kuznetsov"},{"email" : "sponnaga","id" : 426940,"name" : "sponnaga","real_name" : "Sudha Ponnaganti"}],"cf_clone_of" : null,"cf_doc_type" : "If docs needed, set a value","cf_environment" : "","cf_fixed_in" : "","cf_last_closed" : null,"cf_release_notes" : "","cf_target_upstream_version" : "","classification" : "Red Hat","component" : ["Cloud Compute"],"creation_time" : "2020-06-04T15:43:52Z","creator" : "OpenShift BugZilla Robot","creator_detail" : {"email" : "openshift-bugzilla-robot","id" : 438033,"name" : "openshift-bugzilla-robot","real_name" : "OpenShift BugZilla Robot"},"deadline" : null,"depends_on" : [1844101],"docs_contact" : "","dupe_of" : null,"groups" : [],"id" : 1844102,"is_cc_accessible" : true,"is_confirmed" : true,"is_creator_accessible" : true,"is_open" : true,"keywords" : [],"last_change_time" : "2020-06-11T05:39:58Z","op_sys" : "Unspecified","platform" : "Unspecified","priority" : "unspecified","product" : "OpenShift Container Platform","qa_contact" : "Lucie Leistnerova","qa_contact_detail" : {"email" : "lleistne","id" : 399127,"name" : "lleistne","real_name" : "Lucie Leistnerova"},"resolution" : "","see_also" : [],"severity" : "medium","status" : "POST","summary" : "[oVirt] add oVirt as a provide to openshift tests","target_milestone" : "---","target_release" : ["4.4.z"],"url" : "","version" : ["4.5"],"whiteboard" : "" }],"faults" : []}`,
+	}
+	testServer := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("X-BUGZILLA-API-KEY") != "api-key" {
+			t.Error("did not get api-key passed in X-BUGZILLA-API-KEY header")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.URL.Query().Get("api_key") != "api-key" {
+			t.Error("did not get api-key passed in api_key query parameter")
+			http.Error(w, "403 Forbidden", http.StatusForbidden)
+			return
+		}
+		if r.Method != http.MethodGet {
+			t.Errorf("incorrect method to get a bug: %s", r.Method)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if !strings.HasPrefix(r.URL.Path, "/rest/bug/") {
+			t.Errorf("incorrect path to get a bug: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		}
+		if id, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/rest/bug/")); err != nil {
+			t.Errorf("malformed bug id: %s", r.URL.Path)
+			http.Error(w, "400 Bad Request", http.StatusBadRequest)
+			return
+		} else {
+			if val, ok := bugMappings[id]; ok {
+				w.Write([]byte(val))
+			} else {
+				http.Error(w, "404 Not Found", http.StatusNotFound)
+			}
+		}
+	}))
+	defer testServer.Close()
+	client := clientForUrl(testServer.URL)
+	bug := &Bug{
+		ID:        1844102,
+		Summary:   "[oVirt] add oVirt as a provide to openshift tests",
+		DependsOn: []int{1844101},
+	}
+	// this should run get the root
+	root, err := client.GetRootForClone(bug)
+	if err != nil {
+		t.Errorf("expected no error, but got one: %v", err)
+	}
+	if root.ID != 1843407 {
+		t.Errorf("ID of root incorrect.")
+	}
+}
