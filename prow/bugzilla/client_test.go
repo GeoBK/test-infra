@@ -1012,7 +1012,7 @@ func TestGetAllClones(t *testing.T) {
 			}
 			clones, err := client.GetAllClones(parsedResponse.Bugs[0])
 			if err != nil {
-				t.Errorf("Error occured when none was expected: %v", err)
+				t.Errorf("Error occurred when none was expected: %v", err)
 			}
 			if len(tp.expectedClones) != len(clones) {
 				t.Errorf("Mismatch in number of clones - expected: %d, got %d", len(tp.expectedClones), len(clones))
@@ -1080,7 +1080,7 @@ func TestGetRootForClone(t *testing.T) {
 			// this should run get the root
 			root, err := client.GetRootForClone(parsedResponse.Bugs[0])
 			if err != nil {
-				t.Errorf("Error occured when error not expected: %v", err)
+				t.Errorf("Error occurred when error not expected: %v", err)
 			}
 			if root.ID != 1843407 {
 				t.Errorf("ID of root incorrect.")
