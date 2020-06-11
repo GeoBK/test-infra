@@ -1069,17 +1069,22 @@ func TestGetRootForClone(t *testing.T) {
 	}))
 	defer testServer.Close()
 	client := clientForUrl(testServer.URL)
-	bug := &Bug{
-		ID:        1844102,
-		Summary:   "[oVirt] add oVirt as a provide to openshift tests",
-		DependsOn: []int{1844101},
-	}
-	// this should run get the root
-	root, err := client.GetRootForClone(bug)
-	if err != nil {
-		t.Errorf("expected no error, but got one: %v", err)
-	}
-	if root.ID != 1843407 {
-		t.Errorf("ID of root incorrect.")
+	for tc, tp := range bugMappings {
+		t.Run(strconv.Itoa(tc), func(t *testing.T) {
+			var parsedResponse struct {
+				Bugs []*Bug `json:"bugs,omitempty"`
+			}
+			if err := json.Unmarshal([]byte(tp), &parsedResponse); err != nil {
+				t.Fatal(err)
+			}
+			// this should run get the root
+			root, err := client.GetRootForClone(parsedResponse.Bugs[0])
+			if err != nil {
+				t.Errorf("Error occured when error not expected: %v", err)
+			}
+			if root.ID != 1843407 {
+				t.Errorf("ID of root incorrect.")
+			}
+		})
 	}
 }
