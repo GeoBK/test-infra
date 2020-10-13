@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -26,8 +27,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"sigs.k8s.io/yaml"
 
+	"github.com/openshift/ci-tools/pkg/util"
+	"k8s.io/apimachinery/pkg/fields"
+	pjapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
+	prowconfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
@@ -221,6 +226,74 @@ func gatherOptions() options {
 	return o
 }
 
+func triggerProwJob(prowjob *pjapi.ProwJob, config *prowconfig.Config, envVars map[string]string) error {
+	logrus.Info("getting cluster config")
+	// kubeconfig needs to be set in the KUBECONFIG env variable
+	clusterConfig, err := util.LoadClusterConfig()
+	if err != nil {
+		return fmt.Errorf("failed to load cluster configuration: %w", err)
+	}
+
+	pjcset, err := pjclientset.NewForConfig(clusterConfig)
+	if err != nil {
+		return fmt.Errorf("failed to create prowjob clientset: %w", err)
+	}
+	pjclient := pjcset.ProwV1().ProwJobs(config.ProwJobNamespace)
+
+	logrus.WithFields(pjutil.ProwJobFields(prowjob)).Info("submitting a new prowjob")
+	created, err := pjclient.Create(context.TODO(), prowjob, metav1.CreateOptions{})
+	if err != nil {
+		return fmt.Errorf("failed to submit the prowjob: %w", err)
+	}
+
+	logger := logrus.WithFields(pjutil.ProwJobFields(created))
+	logger.Info("submitted the prowjob, waiting for its result")
+
+	selector := fields.SelectorFromSet(map[string]string{"metadata.name": created.Name})
+
+	for {
+		w, err := pjclient.Watch(context.TODO(), metav1.ListOptions{FieldSelector: selector.String()})
+		if err != nil {
+			return fmt.Errorf("failed to create watch for ProwJobs: %w", err)
+		}
+
+		for event := range w.ResultChan() {
+			prowJob, ok := event.Object.(*pjapi.ProwJob)
+			if !ok {
+				return fmt.Errorf("received an unexpected object from Watch: object-type %s", fmt.Sprintf("%T", event.Object))
+			}
+
+			prowJobArtifactsURL := getJobArtifactsURL(prowJob, config)
+
+			switch prowJob.Status.State {
+			case pjapi.FailureState, pjapi.AbortedState, pjapi.ErrorState:
+				pjr := &prowjobResult{
+					Status:       prowJob.Status.State,
+					ArtifactsURL: prowJobArtifactsURL,
+					URL:          prowJob.Status.URL,
+				}
+				err = writeResultOutput(pjr, o.OutputPath, fileSystem)
+				if err != nil {
+					logrus.Error("Unable to write prowjob result to file")
+				}
+				logrus.Warn("job failed")
+				return nil
+			case pjapi.SuccessState:
+				pjr := &prowjobResult{
+					Status:       prowJob.Status.State,
+					ArtifactsURL: prowJobArtifactsURL,
+					URL:          prowJob.Status.URL,
+				}
+				err = writeResultOutput(pjr, o.OutputPath, fileSystem)
+				if err != nil {
+					logrus.Error("Unable to write prowjob result to file")
+				}
+				logrus.Info("job succeeded")
+				return nil
+			}
+		}
+	}
+}
 func main() {
 	o := gatherOptions()
 	if err := o.Validate(); err != nil {
@@ -274,6 +347,12 @@ func main() {
 
 	if err := pjutil.TriggerAndWatchProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
 		logrus.WithError(err).Fatalf("failed while submitting job or watching its result")
+	}
+	if o.dryRun {
+		os.Exit(0)
+	}
+	if err := triggerProwJob(conf, pj, nil); err != nil {
+		logrus.WithError(err).Fatalf("failed while submitting job or watching its result, %v")
 	}
 }
 
