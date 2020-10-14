@@ -33,7 +33,6 @@ import (
 	pjapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	prowapi "k8s.io/test-infra/prow/apis/prowjobs/v1"
 	"k8s.io/test-infra/prow/config"
-	prowconfig "k8s.io/test-infra/prow/config"
 	"k8s.io/test-infra/prow/config/secret"
 	prowflagutil "k8s.io/test-infra/prow/flagutil"
 	"k8s.io/test-infra/prow/github"
@@ -359,7 +358,8 @@ func main() {
 	if o.dryRun {
 		os.Exit(0)
 	}
-	if err := triggerProwJob(o, &pj, conf, nil, fileSystem); err != nil {
+
+	if err := pjutil.TriggerProwJob(o.kubeOptions, &pj, conf, nil, fileSystem, false, o.outputPath); err != nil {
 		logrus.WithError(err).Fatalf("failed while submitting job or watching its result")
 	}
 }
