@@ -359,7 +359,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	if err := pjutil.TriggerProwJob(o.kubeOptions, &pj, conf, nil, fileSystem, false, o.outputPath); err != nil {
+	if err := pjutil.TriggerProwJob(o.kubeOptions, &pj, conf, nil, false); err != nil {
 		logrus.WithError(err).Fatalf("failed while submitting job or watching its result")
 	}
 }

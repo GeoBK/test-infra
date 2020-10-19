@@ -89,7 +89,6 @@ func TriggerAndWatchProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.Pro
 	if err != nil {
 		logrus.WithError(err).Error("failed to marshal prow job result")
 	}
-
 	fmt.Println(string(b))
 	return nil
 }
