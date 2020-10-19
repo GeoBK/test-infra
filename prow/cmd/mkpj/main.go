@@ -25,7 +25,6 @@ import (
 	"strings"
 
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/afero"
 	"sigs.k8s.io/yaml"
 
 	"github.com/openshift/ci-tools/pkg/util"
@@ -296,7 +295,6 @@ func triggerProwJob(prowjob *pjapi.ProwJob, config *prowconfig.Config, envVars m
 }
 func main() {
 	o := gatherOptions()
-	fileSystem := afero.NewOsFs()
 	if err := o.Validate(); err != nil {
 		logrus.WithError(err).Fatalf("Bad flags")
 	}
