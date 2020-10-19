@@ -84,7 +84,6 @@ func TriggerAndWatchProwJob(o prowflagutil.KubernetesOptions, prowjob *pjapi.Pro
 	if result.State != pjapi.SuccessState {
 		logrus.Warn("job failed")
 	}
-
 	b, err := yaml.Marshal(result)
 	if err != nil {
 		logrus.WithError(err).Error("failed to marshal prow job result")
